@@ -54,12 +54,12 @@ get_est <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
 ## est\_cons 
 Function to calculate basic estimate given in Section 2.2  of manuscript tapering the weight for the trial toward 1.
 
-parameters:
-*  est\_rt: treatment effect estimate from randomized trial
-*  est\_os: treatment effect estimate from observational study
+Parameters:
+* est\_rt: treatment effect estimate from randomized trial
+* est\_os: treatment effect estimate from observational study
 * sd\_rt: standard error of treatment effect estimate from randomized trial
-*  st\_os: standard error of treatment effect estimate from observational study
-*  B = number bootstrap resamples
+* st\_os: standard error of treatment effect estimate from observational study
+* B = number bootstrap resamples
 * conf = confidence level
 
 ```
