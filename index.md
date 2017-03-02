@@ -4,7 +4,7 @@ library(boot)
 library(quadprog)
 ```
 
-##  get\_est
+## get\_est
 Basic function to combine randomized trials and observational data (B=number bootstrap iterations - if B=NA only the estimate will be returned)
 
 Parameters:
@@ -51,7 +51,7 @@ get_est <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
 ```
  
 
-##  est\_cons 
+## est\_cons 
 Function to calculate basic estimate given in Section 2.2  of manuscript tapering the weight for the trial toward 1.
 
 parameters:
@@ -100,7 +100,7 @@ est_par <- mle[1]
   return(c(the_est[1],theints$norm[2:3]))
 }
 ```
-##  fe_meta
+## fe_meta
 Fixed effects meta analysis
 
 Parameters
@@ -112,7 +112,7 @@ fe_meta <- function(theta_vec,se_vec){
  return(c(sum(weights*theta_vec),sum(weights^2*se_vec^2)))
 }
 ```
-##  re_meta
+## re_meta
 Random effects meta analysis using DerSimmion/Laird estimate for between study variance
  
 Parameters
@@ -205,7 +205,7 @@ random_data <- function(data,mle=the_est){
 }
 ```
 
-##  est_fixedeffect_nn
+## est_fixedeffect_nn
 Fixed-bias meta analysis (from 3.1).  The estimate for the randomized trials is calculated using a fixed effects meta analysis.  This function does not allow negative weights for the observational studies
 
 
