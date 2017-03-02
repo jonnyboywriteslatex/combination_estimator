@@ -61,7 +61,8 @@ Parameters:
 * B = number bootstrap resamples
 * conf = confidence level
 
-``` est_cons <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
+``` 
+est_cons <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
   if(is.na(B)){
     var_os <- sd_os^2
     var_rt <- sd_rt^2
