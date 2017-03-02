@@ -100,7 +100,8 @@ boot.ci(the.boot,conf=conf,type=c("norm","basic",
 
   
 
-}```
+}
+```
  
 
 ##  est\_cons - function to calculate basic estimate given in Section 2.2  of manuscript tapering the weight for the trial toward 1.
