@@ -50,7 +50,7 @@ get_est <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
 }
 ```
 
-#  est\_cons 
+##  est\_cons 
 Function to calculate basic estimate given in Section 2.2  of manuscript tapering the weight for the trial toward 1.
 
 Parameters:
