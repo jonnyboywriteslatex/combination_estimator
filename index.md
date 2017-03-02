@@ -5,7 +5,7 @@ library(quadprog)
 ```
 
 ## get\_est
-Basic function to combine randomized trials and observational data (B=number bootstrap iterations - if B=NA only the estimate will be returned)
+Basic function to combine individual treatment effect estimates from trials and observational studies given in Section 2.2 of manuscript (B=number bootstrap iterations - if B=NA only the estimate will be returned)
 
 Parameters:
 * est\_rt: treatment effect estimate from randomized trial
