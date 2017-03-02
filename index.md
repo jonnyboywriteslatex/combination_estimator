@@ -4,16 +4,16 @@ library(boot)
 library(quadprog)
 ```
 
+#  get\_est
 Basic function to combine randomized trials and observational data (B=number bootstrap iterations - if B=NA only the estimate will be returned)
 
-#  get\_est - function to calculate basic estimate given in Section 2.2  of manuscript.
-
-parameters:
+Parameters:
 * est\_rt: treatment effect estimate from randomized trial
 * est\_os: treatment effect estimate from observational study
 * sd\_rt: standard error of treatment effect estimate from randomized trial
 * st\_os: standard error of treatment effect estimate from observational study
 * B = number bootstrap resamples
+* conf=confidence level
  
 ```
 get_est <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
@@ -60,6 +60,7 @@ parameters:
 * sd\_rt: standard error of treatment effect estimate from randomized trial
 *  st\_os: standard error of treatment effect estimate from observational study
 *  B = number bootstrap resamples
+* conf = confidence level
 
 ```
 est_cons <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
