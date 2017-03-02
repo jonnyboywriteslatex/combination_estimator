@@ -1,22 +1,19 @@
-
+Load required R libraries
+```
 library(boot)
 library(quadprog)
+```
 
-# Basic function to combine randomized trials and observational data (B=number bootstrap iterations - if B=NA only the estimate will be returned)
+Basic function to combine randomized trials and observational data (B=number bootstrap iterations - if B=NA only the estimate will be returned)
 
-##  get\_est - function to calculate basic estimate given in Section 2.2  of manuscript.
+#  get\_est - function to calculate basic estimate given in Section 2.2  of manuscript.
 
-##  parameters:
-
-##  est\_rt: treatment effect estimate from randomized trial
-
-##  est\_os: treatment effect estimate from observational study
-
-##  sd\_rt: standard error of treatment effect estimate from randomized trial
-
-##  st\_os: standard error of treatment effect estimate from observational study
-
-##  B = number bootstrap resamples
+parameters:
+* est\_rt: treatment effect estimate from randomized trial
+* est\_os: treatment effect estimate from observational study
+* sd\_rt: standard error of treatment effect estimate from randomized trial
+* st\_os: standard error of treatment effect estimate from observational study
+* B = number bootstrap resamples
  
 ```
 get_est <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
@@ -54,13 +51,15 @@ get_est <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
 ```
  
 
-##  est\_cons - function to calculate basic estimate given in Section 2.2  of manuscript tapering the weight for the trial toward 1.
-##  parameters:
-##  est\_rt: treatment effect estimate from randomized trial
-##  est\_os: treatment effect estimate from observational study
-##  sd\_rt: standard error of treatment effect estimate from randomized trial
-##  st\_os: standard error of treatment effect estimate from observational study
-##  B = number bootstrap resamples
+##  est\_cons 
+Function to calculate basic estimate given in Section 2.2  of manuscript tapering the weight for the trial toward 1.
+
+parameters:
+*  est\_rt: treatment effect estimate from randomized trial
+*  est\_os: treatment effect estimate from observational study
+* sd\_rt: standard error of treatment effect estimate from randomized trial
+*  st\_os: standard error of treatment effect estimate from observational study
+*  B = number bootstrap resamples
 
 ```
 est_cons <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
@@ -100,7 +99,11 @@ est_par <- mle[1]
   return(c(the_est[1],theints$norm[2:3]))
 }
 ```
-#  fixed effects meta analysis (theta\_vec,se\_vec are vectors)
+#  fe_meta
+Fixed effects meta analysis
+
+Parameters
+* theta\_vec,se\_vec both vectors
  
 ```
 fe_meta <- function(theta_vec,se_vec){
@@ -108,8 +111,12 @@ fe_meta <- function(theta_vec,se_vec){
  return(c(sum(weights*theta_vec),sum(weights^2*se_vec^2)))
 }
 ```
-#  random effects meta analysis using DerSimmion/Laird estimate for between study variance (theta\_vec,se\_vec are vectors)
+#  re_meta
+Random effects meta analysis using DerSimmion/Laird estimate for between study variance
  
+Parameters
+* theta\_vec,se\_vec both vectors
+
 ```
 re_meta <- function(theta_vec,se_vec){
   F <- fe_meta(theta_vec,se_vec)[1]
@@ -120,31 +127,21 @@ return(c(sum(weights*theta_vec),sum(weights^2*(se_vec^2+sigmab2))))
 }
 ```
 
-#  Fixed-bias meta analysis (from 3.1).  The estimate for the randomized trials is
-calculated using a fixed effects meta analysis. 
+# est_fixedeffect
+Fixed-bias meta analysis (from 3.1).  The estimate for the randomized trials is calculated using a fixed effects meta analysis. 
 This function allows negative weights for the observational studies
 
-##  est_rt: treatment effect vector from
-collection of randomized trials
-
-##  est_os: treatment effect vector from
-collection of observational studies
-
-##  sd_rt: standard error of treatment effects
-from randomized trials
-
-##  st_os: standard error of treatment effects
-from observational studies
-
-##  B = number bootstrap resamples
-
-##  logdata=TRUE (if the est_rt and est_os are
-given on log-scale (as might be true for logistic regression).  If logdata=TRUE, effects are exponentiated
-before outputing
+Parameters
+*  est_rt: treatment effect vector from collection of randomized trials
+*  est_os: treatment effect vector from collection of observational studies
+*  sd_rt: standard error of treatment effects from randomized trials
+*  st_os: standard error of treatment effects from observational studies
+*  B = number bootstrap resamples
+*  logdata=TRUE (if the est_rt and est_os are given on log-scale (as might be true for logistic regression).  If logdata=TRUE, effects are exponentiated before outputing
 
  
 ```
-est_fixedeffect<- function(est_rt,est_os,sd_rt,sd_os,B=1000,logdata=TRUE,conf=.95){
+est_fixedeffect <- function(est_rt,est_os,sd_rt,sd_os,B=1000,logdata=TRUE,conf=.95){
   if(is.na(B)){
     theta_hat <- fe_meta(est_rt,sd_rt)[1]
     est_bias <- est_os-theta_hat
@@ -207,13 +204,17 @@ random_data <- function(data,mle=the_est){
 }
 ```
 
-#  Fixed-bias meta analysis (from 3.1).  The estimate for the randomized trials is calculated using a fixed effects meta analysis.  This function does not allow negative weights for the observational studies
-##  est\_rt: treatment effect vector from collection of randomized trials
-##  est\_os: treatment effect vector from collection of observational studies
-##  sd\_rt: standard error of treatment effects from randomized trials
-##  st\_os: standard error of treatment effects from observational studies
-##  B = number bootstrap resamples
-##  logdata=TRUE (if the est\_rt and est\_os are given on log-scale (as might be true for logistic regression).  If logdata=TRUE, effects are exponentiated before outputing
+#  est_fixedeffect_nn
+Fixed-bias meta analysis (from 3.1).  The estimate for the randomized trials is calculated using a fixed effects meta analysis.  This function does not allow negative weights for the observational studies
+
+
+Parameters
+*  est\_rt: treatment effect vector from collection of randomized trials
+*  est\_os: treatment effect vector from collection of observational studies
+*  sd\_rt: standard error of treatment effects from randomized trials
+*  st\_os: standard error of treatment effects from observational studies
+*  B = number bootstrap resamples
+*  logdata=TRUE (if the est\_rt and est\_os are given on log-scale (as might be true for logistic regression).  If logdata=TRUE, effects are exponentiated before outputing
 
 
 ```
@@ -279,13 +280,16 @@ return((sum(w_rt*est_rt)+sum(w_os*est_os))/(sum(w_os)+sum(w_rt)))
 }
 ```
 
-#  Random-bias meta analysis (from 3.1) using DerSimmion/Laird estimate for between study variance (theta\_vec,se\_vec are vectors).  The estimate for the randomized trials is calculated using a fixed effects meta analysis.  This function does not allow negative weights for the trials
-##  est\_rt: treatment effect vector from collection of randomized trials
-##  est\_os: treatment effect vector from collection of observational studies
-##  sd\_rt: standard error of treatment effects from randomized trials
-##  st\_os: standard error of treatment effects from observational studies
-##  B = number bootstrap resamples
-##  logdata=TRUE (if the est\_rt and est\_os are given on log-scale (as might be true for logistic regression).  If logdata=TRUE, effects are exponentiated before outputing
+# est_randomeffect
+Random-bias meta analysis (from 3.1) using DerSimmion/Laird estimate for between study variance (theta\_vec,se\_vec are vectors).  The estimate for the randomized trials is calculated using a fixed effects meta analysis.  This function does not allow negative weights for the trials
+
+Parameters
+*  est\_rt: treatment effect vector from collection of randomized trials
+*  est\_os: treatment effect vector from collection of observational studies
+*  sd\_rt: standard error of treatment effects from randomized trials
+* st\_os: standard error of treatment effects from observational studies
+*  B = number bootstrap resamples
+*  logdata=TRUE (if the est\_rt and est\_os are given on log-scale (as might be true for logistic regression).  If logdata=TRUE, effects are exponentiated before outputing
 
 ```
 est_randomeffect <- function(est_rt,est_os,sd_rt,sd_os,B=1000,logdata=TRUE,conf=.95){
