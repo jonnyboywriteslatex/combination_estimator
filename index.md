@@ -1,5 +1,5 @@
-library(boot)
 
+library(boot)
 library(quadprog)
 
 # Basic function to combine randomized trials and observational data (B=number bootstrap iterations - if B=NA only the estimate will be returned)
@@ -17,610 +17,772 @@ library(quadprog)
 ##  st\_os: standard error of treatment effect estimate from observational study
 
 ##  B = number bootstrap resamples
+ 
 ```
-get\_est &lt;- function(est\_rt,est\_os,sd\_rt,sd\_os,B=NA,conf=.95){
+get_est
+<- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
 
-  var\_os &lt;- sd\_os^2
+  var_os <- sd_os^2
 
-  var\_rt &lt;- sd\_rt^2
+  var_rt <- sd_rt^2
 
-  bias &lt;- est\_os-est\_rt
+  bias <- est_os-est_rt
 
-  w &lt;-  (bias^2+var\_os)/(bias^2+var\_os+var\_rt)
+  w <- 
+(bias^2+var_os)/(bias^2+var_os+var_rt)
 
-  est &lt;- w\*est\_rt+(1-w)\*est\_os
+  est <- w*est_rt+(1-w)*est_os
 
-  if(is.na(B)) return(est)
+  
 
-  # parametric bootstrap
+  if(is.na(B)) return(est)
 
-  data &lt;- c(est\_rt=est\_rt,est\_os=est\_os,sd\_rt=sd\_rt,sd\_os=sd\_os)
+  # parametric bootstrap
 
-  est &lt;- function(data){
+  data <-
+c(est_rt=est_rt,est_os=est_os,sd_rt=sd_rt,sd_os=sd_os)
 
-    est\_rt &lt;- data[1]
+  est <- function(data){
 
-    est\_os &lt;- data[2]
+    est_rt <- data[1]
 
-    var\_rt &lt;- data[3]^2
+    est_os <- data[2]
 
-    var\_os &lt;- data[4]^2
+    var_rt <- data[3]^2
 
-    bias &lt;- est\_os-est\_rt
+    var_os <- data[4]^2
 
-    w &lt;-  (bias^2+var\_os)/(bias^2+var\_os+var\_rt)
+    bias <- est_os-est_rt
 
-    return(w\*est\_rt+(1-w)\*est\_os)
+    w <- 
+(bias^2+var_os)/(bias^2+var_os+var_rt)
 
-  }
+    return(w*est_rt+(1-w)*est_os)
 
-  the\_est &lt;- est(data)
+    
 
-  random\_data &lt;- function(data,mle=the\_est){
+  }
 
-    est\_par &lt;- mle[1]
+  the_est <- est(data)
 
-    est\_bias &lt;- data[2]-data[1]
+  
 
-    sd\_rt &lt;- data[3]
+  random_data <- function(data,mle=the_est){
 
-    sd\_os &lt;- data[4]
+    est_par <- mle[1]
 
-    rt\_b &lt;- rnorm(1,mean=est\_par,sd=sd\_rt)
+    est_bias <- data[2]-data[1]
 
-    os\_b &lt;- rnorm(1,mean=est\_par+est\_bias,sd=sd\_os)
+    sd_rt <- data[3]
 
-    return(c(rt\_b,os\_b,sd\_rt,sd\_os))
+    sd_os <- data[4]
 
-  }
+    rt_b <- rnorm(1,mean=est_par,sd=sd_rt)
 
-  the.boot &lt;- boot(data, est, R = B, sim = &quot;parametric&quot;,
+    os_b <-
+rnorm(1,mean=est_par+est_bias,sd=sd_os)
 
-                   ran.gen = random\_data, mle = mean(the\_est))
+    return(c(rt_b,os_b,sd_rt,sd_os))
 
-  theints &lt;- boot.ci(the.boot,conf=conf,type=c(&quot;norm&quot;,&quot;basic&quot;, &quot;stud&quot;, &quot;perc&quot;))
+  }
 
-  # assuming 0 is true parameters do intervals cover 0?
+  the.boot <- boot(data, est, R = B, sim =
+"parametric",
 
-  return(c(the\_est[1],theints$norm[2:3]))
+                   ran.gen = random_data, mle =
+mean(the_est))
+
+  theints <-
+boot.ci(the.boot,conf=conf,type=c("norm","basic",
+"stud", "perc"))
+
+  # assuming 0 is true parameters do intervals
+cover 0?
+
+  return(c(the_est[1],theints$norm[2:3]))
+
+  
+
+}```
+ 
+
+##  est\_cons - function to calculate basic estimate given in Section 2.2  of manuscript tapering the weight for the trial toward 1.
+##  parameters:
+##  est\_rt: treatment effect estimate from randomized trial
+##  est\_os: treatment effect estimate from observational study
+##  sd\_rt: standard error of treatment effect estimate from randomized trial
+##  st\_os: standard error of treatment effect estimate from observational study
+##  B = number bootstrap resamples
+
+```
+est_cons
+<- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
+
+  if(is.na(B)){
+
+    var_os <- sd_os^2
+
+    var_rt <- sd_rt^2
+
+    bias <- est_os-est_rt
+
+    bias <-
+max(abs(bias-2*sqrt(var_rt+var_os)),abs(bias+2*sqrt(var_rt+var_os)))
+
+    w <- 
+(bias^2+var_os)/(bias^2+var_os+var_rt)
+
+    return(w*est_rt+(1-w)*est_os)
+
+  }
+
+  data <-
+c(est_rt=est_rt,est_os=est_os,sd_rt=sd_rt,sd_os=sd_os)
+
+  est <- function(data){
+
+    est_rt <- data[1]
+
+    est_os <- data[2]
+
+    var_rt <- data[3]^2
+
+    var_os <- data[4]^2
+
+    bias <- est_os-est_rt
+
+    bias <-
+max(abs(bias-2*sqrt(var_rt+var_os)),abs(bias+2*sqrt(var_rt+var_os)))
+
+    w <- 
+(bias^2+var_os)/(bias^2+var_os+var_rt)
+
+    return(w*est_rt+(1-w)*est_os)
+
+    
+
+  }
+
+  the_est <- est(data)
+
+  
+
+  random_data <- function(data,mle=the_est){
+
+    est_par <- mle[1]
+
+    est_bias <- data[2]-data[1]
+
+    sd_rt <- data[3]
+
+    sd_os <- data[4]
+
+    rt_b <- rnorm(1,mean=est_par,sd=sd_rt)
+
+    os_b <-
+rnorm(1,mean=est_par+est_bias,sd=sd_os)
+
+    return(c(rt_b,os_b,sd_rt,sd_os))
+
+  }
+
+  the.boot <- boot(data, est, R = B, sim =
+"parametric",
+
+                   ran.gen = random_data, mle =
+mean(the_est))
+
+  theints <-
+boot.ci(the.boot,conf=conf,type=c("norm","basic",
+"stud", "perc"))
+
+
+
+  return(c(the_est[1],theints$norm[2:3]))
+
+  
 
 }
+
+ 
 ```
-##  est\_cons - function to calculate basic estimate given in Section 2.2  of manuscript tapering the weight for the trial toward 1.
+#  fixed effects meta analysis (theta\_vec,se\_vec are vectors)
+ 
+```
+fe_meta
+<- function(theta_vec,se_vec){
 
-##  parameters:
+  
 
-##  est\_rt: treatment effect estimate from randomized trial
+  weights <- 1/se_vec^2/(sum(1/se_vec^2))
 
-##  est\_os: treatment effect estimate from observational study
+ 
+return(c(sum(weights*theta_vec),sum(weights^2*se_vec^2)))
 
-##  sd\_rt: standard error of treatment effect estimate from randomized trial
-
-##  st\_os: standard error of treatment effect estimate from observational study
-
-##  B = number bootstrap resamples```
-est\_cons &lt;- function(est\_rt,est\_os,sd\_rt,sd\_os,B=NA,conf=.95){
-
-  if(is.na(B)){
-
-    var\_os &lt;- sd\_os^2
-
-    var\_rt &lt;- sd\_rt^2
-
-    bias &lt;- est\_os-est\_rt
-
-    bias &lt;- max(abs(bias-2\*sqrt(var\_rt+var\_os)),abs(bias+2\*sqrt(var\_rt+var\_os)))
-
-    w &lt;-  (bias^2+var\_os)/(bias^2+var\_os+var\_rt)
-
-    return(w\*est\_rt+(1-w)\*est\_os)
-
-  }
-
-  data &lt;- c(est\_rt=est\_rt,est\_os=est\_os,sd\_rt=sd\_rt,sd\_os=sd\_os)
-
-  est &lt;- function(data){
-
-    est\_rt &lt;- data[1]
-
-    est\_os &lt;- data[2]
-
-    var\_rt &lt;- data[3]^2
-
-    var\_os &lt;- data[4]^2
-
-    bias &lt;- est\_os-est\_rt
-
-    bias &lt;- max(abs(bias-2\*sqrt(var\_rt+var\_os)),abs(bias+2\*sqrt(var\_rt+var\_os)))
-
-    w &lt;-  (bias^2+var\_os)/(bias^2+var\_os+var\_rt)
-
-    return(w\*est\_rt+(1-w)\*est\_os)
-
-  }
-
-  the\_est &lt;- est(data)
-
-  random\_data &lt;- function(data,mle=the\_est){
-
-    est\_par &lt;- mle[1]
-
-    est\_bias &lt;- data[2]-data[1]
-
-    sd\_rt &lt;- data[3]
-
-    sd\_os &lt;- data[4]
-
-    rt\_b &lt;- rnorm(1,mean=est\_par,sd=sd\_rt)
-
-    os\_b &lt;- rnorm(1,mean=est\_par+est\_bias,sd=sd\_os)
-
-    return(c(rt\_b,os\_b,sd\_rt,sd\_os))
-
-  }
-
-  the.boot &lt;- boot(data, est, R = B, sim = &quot;parametric&quot;,
-
-                   ran.gen = random\_data, mle = mean(the\_est))
-
-  theints &lt;- boot.ci(the.boot,conf=conf,type=c(&quot;norm&quot;,&quot;basic&quot;, &quot;stud&quot;, &quot;perc&quot;))
-
-  # assuming 0 is true parameters do intervals cover 0?
-
-  return(c(the\_est[1],theints$norm[2:3]))
+  
 
 }```
-#  fixed effects meta analysis (theta\_vec,se\_vec are vectors)```
-fe\_meta &lt;- function(theta\_vec,se\_vec){
 
-  weights &lt;- 1/se\_vec^2/(sum(1/se\_vec^2))
-
-  return(c(sum(weights\*theta\_vec),sum(weights^2\*se\_vec^2)))
-
-}```
-#  random effects meta analysis using DerSimmion/Laird estimate for between study variance (theta\_vec,se\_vec are vectors)
-
+ #  random effects meta analysis using DerSimmion/Laird estimate for between study variance (theta\_vec,se\_vec are vectors)
+ 
 ```
-re\_meta &lt;- function(theta\_vec,se\_vec){
+re_meta
+<- function(theta_vec,se_vec){
 
-  F &lt;- fe\_meta(theta\_vec,se\_vec)[1]
+  F <- fe_meta(theta_vec,se_vec)[1]
 
-  Q &lt;- sum(se\_vec^-2\*(theta\_vec-F)^2)
+  Q <- sum(se_vec^-2*(theta_vec-F)^2)
 
-  sigmab2 &lt;- max(0, (Q-(length(theta\_vec)-1))/(sum(se\_vec^-2)-sum(se\_vec^-4)/sum(se\_vec^-2)))
+  sigmab2 <- max(0,
+(Q-(length(theta_vec)-1))/(sum(se_vec^-2)-sum(se_vec^-4)/sum(se_vec^-2)))
 
-  weights &lt;- 1/(se\_vec^2+sigmab2)/(sum(1/(se\_vec^2+sigmab2)))
+  weights <-
+1/(se_vec^2+sigmab2)/(sum(1/(se_vec^2+sigmab2)))
 
-  return(c(sum(weights\*theta\_vec),sum(weights^2\*(se\_vec^2+sigmab2))))
+ 
+return(c(sum(weights*theta_vec),sum(weights^2*(se_vec^2+sigmab2))))
 
 }
+
+ 
+
+ ```
+
+#  Fixed-bias meta analysis (from 3.1).  The estimate for the randomized trials is
+calculated using a fixed effects meta analysis. 
+This function allows negative weights for the observational studies
+
+##  est_rt: treatment effect vector from
+collection of randomized trials
+
+##  est_os: treatment effect vector from
+collection of observational studies
+
+##  sd_rt: standard error of treatment effects
+from randomized trials
+
+##  st_os: standard error of treatment effects
+from observational studies
+
+##  B = number bootstrap resamples
+
+##  logdata=TRUE (if the est_rt and est_os are
+given on log-scale (as might be true for logistic regression).  If logdata=TRUE, effects are exponentiated
+before outputing
+
+ 
 ```
-#  Fixed-bias meta analysis (from 3.1).  The estimate for the randomized trials is calculated using a fixed effects meta analysis.  This function allows negative weights for the observational studies
+est_fixedeffect
+<- function(est_rt,est_os,sd_rt,sd_os,B=1000,logdata=TRUE,conf=.95){
 
-##  est\_rt: treatment effect vector from collection of randomized trials
+  if(is.na(B)){
 
-##  est\_os: treatment effect vector from collection of observational studies
+    theta_hat <- fe_meta(est_rt,sd_rt)[1]
 
-##  sd\_rt: standard error of treatment effects from randomized trials
+    est_bias <- est_os-theta_hat
 
-##  st\_os: standard error of treatment effects from observational studies
+    var_os <- sd_os^2
 
-##  B = number bootstrap resamples
+    var_rt <- sd_rt^2
 
-##  logdata=TRUE (if the est\_rt and est\_os are given on log-scale (as might be true for logistic regression).  If logdata=TRUE, effects are exponentiated before outputing```
-est\_fixedeffect &lt;- function(est\_rt,est\_os,sd\_rt,sd\_os,B=1000,logdata=TRUE,conf=.95){
+    Dmat <-
+1*(c(rep(0,length(est_rt)),est_bias)%*%t(c(rep(0,length(est_rt)),est_bias))+diag(c(sd_rt^2,sd_os^2)))
 
-  if(is.na(B)){
+    bvec <- c(1)
 
-    theta\_hat &lt;- fe\_meta(est\_rt,sd\_rt)[1]
+    meq <- 1
 
-    est\_bias &lt;- est\_os-theta\_hat
+    dvec <-
+c(rep(0,length(est_rt)),rep(0,length(est_os)))
 
-    var\_os &lt;- sd\_os^2
+    Amat <-
+t(matrix(c(rep(1,length(est_rt)),rep(1,length(est_os))),nrow=length(bvec)))
 
-    var\_rt &lt;- sd\_rt^2
+    weights <- solve.QP(Dmat=Dmat,
+dvec=dvec, Amat=Amat, bvec=bvec, meq=0, factorized=FALSE)$solution
 
-    Dmat &lt;- 1\*(c(rep(0,length(est\_rt)),est\_bias)%\*%t(c(rep(0,length(est\_rt)),est\_bias))+diag(c(sd\_rt^2,sd\_os^2)))
+    w_rt <- weights[1:length(est_rt)]
 
-    bvec &lt;- c(1)
+    w_os <-
+weights[(length(est_rt)+1):length(weights)]
 
-    meq &lt;- 1
+    if(logdata)
+return(exp((sum(w_rt*est_rt)+sum(w_os*est_os))/(sum(w_os)+sum(w_rt))))
 
-    dvec &lt;- c(rep(0,length(est\_rt)),rep(0,length(est\_os)))
+   
+return((sum(w_rt*est_rt)+sum(w_os*est_os))/(sum(w_os)+sum(w_rt)))
 
-    Amat &lt;- t(matrix(c(rep(1,length(est\_rt)),rep(1,length(est\_os))),nrow=length(bvec)))
+  }
 
-    weights &lt;- solve.QP(Dmat=Dmat, dvec=dvec, Amat=Amat, bvec=bvec, meq=0, factorized=FALSE)$solution
+  N_rt
+<- length(est_rt)
 
-    w\_rt &lt;- weights[1:length(est\_rt)]
+  N_os <- length(est_os)
 
-    w\_os &lt;- weights[(length(est\_rt)+1):length(weights)]
+  data <-
+c(est_rt,sd_rt,est_os,sd_os,N_rt,N_os)
 
-    if(logdata) return(exp((sum(w\_rt\*est\_rt)+sum(w\_os\*est\_os))/(sum(w\_os)+sum(w\_rt))))
+  get_est <- function(data){
 
-    return((sum(w\_rt\*est\_rt)+sum(w\_os\*est\_os))/(sum(w\_os)+sum(w\_rt)))
+    N_os <- data[length(data)]
 
-  }
+    N_rt <- data[length(data)-1]
 
-  N\_rt &lt;- length(est\_rt)
+    est_rt <- data[1:N_rt]
 
-  N\_os &lt;- length(est\_os)
+    est_os <- data[(2*N_rt+1):(2*N_rt+N_os)]
 
-  data &lt;- c(est\_rt,sd\_rt,est\_os,sd\_os,N\_rt,N\_os)
+    sd_rt <- data[(N_rt+1):(2*N_rt)]
 
-  get\_est &lt;- function(data){
+    sd_os <-
+data[(2*N_rt+N_os+1):(2*N_rt+2*N_os)]
 
-    N\_os &lt;- data[length(data)]
+    theta_hat <- fe_meta(est_rt,sd_rt)[1]
 
-    N\_rt &lt;- data[length(data)-1]
+    est_bias <- est_os-theta_hat
 
-    est\_rt &lt;- data[1:N\_rt]
+    var_os <- sd_os^2
 
-    est\_os &lt;- data[(2\*N\_rt+1):(2\*N\_rt+N\_os)]
+    var_rt <- sd_rt^2
 
-    sd\_rt &lt;- data[(N\_rt+1):(2\*N\_rt)]
+    Dmat <-
+1*(c(rep(0,length(est_rt)),est_bias)%*%t(c(rep(0,length(est_rt)),est_bias))+diag(c(sd_rt^2,sd_os^2)))
 
-    sd\_os &lt;- data[(2\*N\_rt+N\_os+1):(2\*N\_rt+2\*N\_os)]
+    bvec <- c(1)
 
-    theta\_hat &lt;- fe\_meta(est\_rt,sd\_rt)[1]
+    meq <- 1
 
-    est\_bias &lt;- est\_os-theta\_hat
+    dvec <-
+c(rep(0,length(est_rt)),rep(0,length(est_os)))
 
-    var\_os &lt;- sd\_os^2
+    Amat <-
+t(matrix(c(rep(1,length(est_rt)),rep(1,length(est_os))),nrow=length(bvec)))
 
-    var\_rt &lt;- sd\_rt^2
+    weights <- solve.QP(Dmat=Dmat,
+dvec=dvec, Amat=Amat, bvec=bvec, meq=0, factorized=FALSE)$solution
 
-    Dmat &lt;- 1\*(c(rep(0,length(est\_rt)),est\_bias)%\*%t(c(rep(0,length(est\_rt)),est\_bias))+diag(c(sd\_rt^2,sd\_os^2)))
+    w_rt <- weights[1:length(est_rt)]
 
-    bvec &lt;- c(1)
+    w_os <-
+weights[(length(est_rt)+1):length(weights)]
 
-    meq &lt;- 1
+    return((sum(w_rt*est_rt)+sum(w_os*est_os))/(sum(w_os)+sum(w_rt)))
 
-    dvec &lt;- c(rep(0,length(est\_rt)),rep(0,length(est\_os)))
 
-    Amat &lt;- t(matrix(c(rep(1,length(est\_rt)),rep(1,length(est\_os))),nrow=length(bvec)))
+  }
 
-    weights &lt;- solve.QP(Dmat=Dmat, dvec=dvec, Amat=Amat, bvec=bvec, meq=0, factorized=FALSE)$solution
+  
 
-    w\_rt &lt;- weights[1:length(est\_rt)]
+  the_est <- get_est(data)
 
-    w\_os &lt;- weights[(length(est\_rt)+1):length(weights)]
+  
 
-    return((sum(w\_rt\*est\_rt)+sum(w\_os\*est\_os))/(sum(w\_os)+sum(w\_rt)))
+  random_data <- function(data,mle=the_est){
 
-  }
+    
 
-  the\_est &lt;- get\_est(data)
+    
 
-  random\_data &lt;- function(data,mle=the\_est){
+    N_os <- data[length(data)]
 
+    N_rt <- data[length(data)-1]
 
+    est_rt <- data[1:N_rt]
 
-    N\_os &lt;- data[length(data)]
+    est_os <- data[(2*N_rt+1):(2*N_rt+N_os)]
 
-    N\_rt &lt;- data[length(data)-1]
+    sd_rt <- data[(N_rt+1):(2*N_rt)]
 
-    est\_rt &lt;- data[1:N\_rt]
+    sd_os <-
+data[(2*N_rt+N_os+1):(2*N_rt+2*N_os)]
 
-    est\_os &lt;- data[(2\*N\_rt+1):(2\*N\_rt+N\_os)]
+    theta_hat <- fe_meta(est_rt,sd_rt)[1]
 
-    sd\_rt &lt;- data[(N\_rt+1):(2\*N\_rt)]
+    est_bias <- est_os-theta_hat
 
-    sd\_os &lt;- data[(2\*N\_rt+N\_os+1):(2\*N\_rt+2\*N\_os)]
+    rt_b <-
+rnorm(length(sd_rt),mean=mle,sd=sd_rt)
 
-    theta\_hat &lt;- fe\_meta(est\_rt,sd\_rt)[1]
+    os_b <- rnorm(length(sd_os),mean=mle+est_bias,sd=sd_os)
 
-    est\_bias &lt;- est\_os-theta\_hat
+    return(c(rt_b,sd_rt,os_b,sd_os,N_rt,N_os))
 
-    rt\_b &lt;- rnorm(length(sd\_rt),mean=mle,sd=sd\_rt)
+  }
 
-    os\_b &lt;- rnorm(length(sd\_os),mean=mle+est\_bias,sd=sd\_os)
+  the.boot <- boot(data, get_est, R = B, sim
+= "parametric",
 
-    return(c(rt\_b,sd\_rt,os\_b,sd\_os,N\_rt,N\_os))
+                   ran.gen = random_data, mle =
+the_est)
 
-  }
+  theints <-
+boot.ci(the.boot,conf=conf,type=c("norm","basic",
+"stud", "perc")) 
 
-  the.boot &lt;- boot(data, get\_est, R = B, sim = &quot;parametric&quot;,
+  if(logdata)
+return(c(exp(the_est),exp(theints$norm[2:3])))
 
-                   ran.gen = random\_data, mle = the\_est)
+  return(c(the_est,theints$norm[2:3]))
 
-  theints &lt;- boot.ci(the.boot,conf=conf,type=c(&quot;norm&quot;,&quot;basic&quot;, &quot;stud&quot;, &quot;perc&quot;))
+}
 
-  if(logdata) return(c(exp(the\_est),exp(theints$norm[2:3])))
+ ```
 
-  return(c(the\_est,theints$norm[2:3]))
+#  Fixed-bias meta analysis (from 3.1).  The estimate for the randomized trials is calculated using a fixed effects meta analysis.  This function does not allow negative weights for the observational studies
+##  est\_rt: treatment effect vector from collection of randomized trials
+##  est\_os: treatment effect vector from collection of observational studies
+##  sd\_rt: standard error of treatment effects from randomized trials
+##  st\_os: standard error of treatment effects from observational studies
+##  B = number bootstrap resamples
+##  logdata=TRUE (if the est\_rt and est\_os are given on log-scale (as might be true for logistic regression).  If logdata=TRUE, effects are exponentiated before outputing
 
-}```
-#  Fixed-bias meta analysis (from 3.1).  The estimate for the randomized trials is calculated using a fixed effects meta analysis.  This function does not allow negative weights for the observational studies
-
-##  est\_rt: treatment effect vector from collection of randomized trials
-
-##  est\_os: treatment effect vector from collection of observational studies
-
-##  sd\_rt: standard error of treatment effects from randomized trials
-
-##  st\_os: standard error of treatment effects from observational studies
-
-##  B = number bootstrap resamples
-
-##  logdata=TRUE (if the est\_rt and est\_os are given on log-scale (as might be true for logistic regression).  If logdata=TRUE, effects are exponentiated before outputing
 
 ```
-est\_fixedeffect\_nn &lt;- function(est\_rt,est\_os,sd\_rt,sd\_os,B=1000,logdata=TRUE,conf=.95){
+est_fixedeffect_nn
+<- function(est_rt,est_os,sd_rt,sd_os,B=1000,logdata=TRUE,conf=.95){
 
-  if(is.na(B)){
+  if(is.na(B)){
 
-    theta\_hat &lt;- fe\_meta(est\_rt,sd\_rt)[1]
+    theta_hat <- fe_meta(est_rt,sd_rt)[1]
 
-    est\_bias &lt;- est\_os-theta\_hat
+    est_bias <- est_os-theta_hat
 
-    var\_os &lt;- sd\_os^2
+    var_os <- sd_os^2
 
-    var\_rt &lt;- sd\_rt^2
+    var_rt <- sd_rt^2
 
-    Dmat &lt;- 1\*(c(rep(0,length(est\_rt)),est\_bias)%\*%t(c(rep(0,length(est\_rt)),est\_bias))+diag(c(sd\_rt^2,sd\_os^2)))
+    Dmat <-
+1*(c(rep(0,length(est_rt)),est_bias)%*%t(c(rep(0,length(est_rt)),est_bias))+diag(c(sd_rt^2,sd_os^2)))
 
-    bvec &lt;- c(1,rep(0,length(est\_rt)),rep(0,length(est\_os)))
+    bvec <-
+c(1,rep(0,length(est_rt)),rep(0,length(est_os)))
 
-    meq &lt;- 1
+    meq <- 1
 
-    dvec &lt;- c(rep(0,length(est\_rt)),rep(0,length(est\_os)))
+    dvec <-
+c(rep(0,length(est_rt)),rep(0,length(est_os)))
 
-    Amat &lt;- t(matrix(rbind( c(rep(1,length(est\_rt)),rep(1,length(est\_os))),diag(1,length(est\_rt)+length(est\_os))),nrow=length(bvec)))
+    Amat <- t(matrix(rbind(
+c(rep(1,length(est_rt)),rep(1,length(est_os))),diag(1,length(est_rt)+length(est_os))),nrow=length(bvec)))
 
-    weights &lt;- solve.QP(Dmat=Dmat, dvec=dvec, Amat=Amat, bvec=bvec, meq=0, factorized=FALSE)$solution
+    weights <- solve.QP(Dmat=Dmat, dvec=dvec,
+Amat=Amat, bvec=bvec, meq=0, factorized=FALSE)$solution
 
-    w\_rt &lt;- weights[1:length(est\_rt)]
+    w_rt <- weights[1:length(est_rt)]
 
-    w\_os &lt;- weights[(length(est\_rt)+1):length(weights)]
+    w_os <-
+weights[(length(est_rt)+1):length(weights)]
 
-    if(logdata) return(exp((sum(w\_rt\*est\_rt)+sum(w\_os\*est\_os))/(sum(w\_os)+sum(w\_rt))))
+    
 
-    return((sum(w\_rt\*est\_rt)+sum(w\_os\*est\_os))/(sum(w\_os)+sum(w\_rt)))
+    if(logdata)
+return(exp((sum(w_rt*est_rt)+sum(w_os*est_os))/(sum(w_os)+sum(w_rt))))
 
-  }
+   
+return((sum(w_rt*est_rt)+sum(w_os*est_os))/(sum(w_os)+sum(w_rt)))
 
-  N\_rt &lt;- length(est\_rt)
+  }
 
-  N\_os &lt;- length(est\_os)
+  N_rt <- length(est_rt)
 
-  data &lt;- c(est\_rt,sd\_rt,est\_os,sd\_os,N\_rt,N\_os)
+  N_os <- length(est_os)
 
-  get\_est &lt;- function(data){
+  data <-
+c(est_rt,sd_rt,est_os,sd_os,N_rt,N_os)
 
-    N\_os &lt;- data[length(data)]
+  get_est <- function(data){
 
-    N\_rt &lt;- data[length(data)-1]
+    N_os <- data[length(data)]
 
-    est\_rt &lt;- data[1:N\_rt]
+    N_rt <- data[length(data)-1]
 
-    est\_os &lt;- data[(2\*N\_rt+1):(2\*N\_rt+N\_os)]
+    est_rt <- data[1:N_rt]
 
-    sd\_rt &lt;- data[(N\_rt+1):(2\*N\_rt)]
+    est_os <- data[(2*N_rt+1):(2*N_rt+N_os)]
 
-    sd\_os &lt;- data[(2\*N\_rt+N\_os+1):(2\*N\_rt+2\*N\_os)]
+    sd_rt <- data[(N_rt+1):(2*N_rt)]
 
-    theta\_hat &lt;- fe\_meta(est\_rt,sd\_rt)[1]
+    sd_os <-
+data[(2*N_rt+N_os+1):(2*N_rt+2*N_os)]
 
-    est\_bias &lt;- est\_os-theta\_hat
+    theta_hat <- fe_meta(est_rt,sd_rt)[1]
 
-    var\_os &lt;- sd\_os^2
+    est_bias <- est_os-theta_hat
 
-    var\_rt &lt;- sd\_rt^2
+    var_os <- sd_os^2
 
-    Dmat &lt;- 1\*(c(rep(0,length(est\_rt)),est\_bias)%\*%t(c(rep(0,length(est\_rt)),est\_bias))+diag(c(sd\_rt^2,sd\_os^2)))
+    var_rt <- sd_rt^2
 
-    bvec &lt;- c(1,rep(0,length(est\_rt)),rep(0,length(est\_os)))
+    Dmat <-
+1*(c(rep(0,length(est_rt)),est_bias)%*%t(c(rep(0,length(est_rt)),est_bias))+diag(c(sd_rt^2,sd_os^2)))
 
-    meq &lt;- 1
+    bvec <-
+c(1,rep(0,length(est_rt)),rep(0,length(est_os)))
 
-    dvec &lt;- c(rep(0,length(est\_rt)),rep(0,length(est\_os)))
+    meq <- 1
 
-    Amat &lt;- t(matrix(rbind( c(rep(1,length(est\_rt)),rep(1,length(est\_os))),diag(1,length(est\_rt)+length(est\_os))),nrow=length(bvec)))
+    dvec <- c(rep(0,length(est_rt)),rep(0,length(est_os)))
 
-    weights &lt;- solve.QP(Dmat=Dmat, dvec=dvec, Amat=Amat, bvec=bvec, meq=0, factorized=FALSE)$solution
+    Amat <- t(matrix(rbind(
+c(rep(1,length(est_rt)),rep(1,length(est_os))),diag(1,length(est_rt)+length(est_os))),nrow=length(bvec)))
 
-    w\_rt &lt;- weights[1:length(est\_rt)]
+    weights <- solve.QP(Dmat=Dmat,
+dvec=dvec, Amat=Amat, bvec=bvec, meq=0, factorized=FALSE)$solution
 
-    w\_os &lt;- weights[(length(est\_rt)+1):length(weights)]
+    w_rt <- weights[1:length(est_rt)]
 
-    return((sum(w\_rt\*est\_rt)+sum(w\_os\*est\_os))/(sum(w\_os)+sum(w\_rt)))
+    w_os <-
+weights[(length(est_rt)+1):length(weights)]
 
-  }
+   
+return((sum(w_rt*est_rt)+sum(w_os*est_os))/(sum(w_os)+sum(w_rt))) 
 
-  the\_est &lt;- get\_est(data)
+  }
 
-  random\_data &lt;- function(data,mle=the\_est){
+  
 
+  the_est <- get_est(data)
 
+  
 
-    N\_os &lt;- data[length(data)]
+  random_data <- function(data,mle=the_est){
 
-    N\_rt &lt;- data[length(data)-1]
+    
 
-    est\_rt &lt;- data[1:N\_rt]
+    
 
-    est\_os &lt;- data[(2\*N\_rt+1):(2\*N\_rt+N\_os)]
+    N_os <- data[length(data)]
 
-    sd\_rt &lt;- data[(N\_rt+1):(2\*N\_rt)]
+    N_rt <- data[length(data)-1]
 
-    sd\_os &lt;- data[(2\*N\_rt+N\_os+1):(2\*N\_rt+2\*N\_os)]
+    est_rt <- data[1:N_rt]
 
-    theta\_hat &lt;- fe\_meta(est\_rt,sd\_rt)[1]
+    est_os <- data[(2*N_rt+1):(2*N_rt+N_os)]
 
-    est\_bias &lt;- est\_os-theta\_hat
+    sd_rt <- data[(N_rt+1):(2*N_rt)]
 
-    rt\_b &lt;- rnorm(length(sd\_rt),mean=mle,sd=sd\_rt)
+    sd_os <-
+data[(2*N_rt+N_os+1):(2*N_rt+2*N_os)]
 
-    os\_b &lt;- rnorm(length(sd\_os),mean=mle+est\_bias,sd=sd\_os)
+    theta_hat <- fe_meta(est_rt,sd_rt)[1]
 
-    return(c(rt\_b,sd\_rt,os\_b,sd\_os,N\_rt,N\_os))
+    est_bias <- est_os-theta_hat
 
-  }
+    rt_b <-
+rnorm(length(sd_rt),mean=mle,sd=sd_rt)
 
-  the.boot &lt;- boot(data, get\_est, R = B, sim = &quot;parametric&quot;,
+    os_b <-
+rnorm(length(sd_os),mean=mle+est_bias,sd=sd_os)
 
-                   ran.gen = random\_data, mle = the\_est)
+    return(c(rt_b,sd_rt,os_b,sd_os,N_rt,N_os))
 
-  theints &lt;- boot.ci(the.boot,conf=conf,type=c(&quot;norm&quot;,&quot;basic&quot;, &quot;stud&quot;, &quot;perc&quot;))
+  }
 
-  if(logdata) return(c(exp(the\_est),exp(theints$norm[2:3])))
+  the.boot <- boot(data, get_est, R = B, sim
+= "parametric",
 
-  return(c(the\_est,theints$norm[2:3]))
+                   ran.gen = random_data, mle =
+the_est)
 
-} ```
+  theints <-
+boot.ci(the.boot,conf=conf,type=c("norm","basic",
+"stud", "perc")) 
 
-#  Random-bias meta analysis (from 3.1) using DerSimmion/Laird estimate for between study variance (theta\_vec,se\_vec are vectors).  The estimate for the randomized trials is calculated using a fixed effects meta analysis.  This function does not allow negative weights for the trials
+  if(logdata)
+return(c(exp(the_est),exp(theints$norm[2:3])))
 
-##  est\_rt: treatment effect vector from collection of randomized trials
+  return(c(the_est,theints$norm[2:3]))
 
-##  est\_os: treatment effect vector from collection of observational studies
+}
 
-##  sd\_rt: standard error of treatment effects from randomized trials
+ ```
 
-##  st\_os: standard error of treatment effects from observational studies
+#  Random-bias meta analysis (from 3.1) using DerSimmion/Laird estimate for between study variance (theta\_vec,se\_vec are vectors).  The estimate for the randomized trials is calculated using a fixed effects meta analysis.  This function does not allow negative weights for the trials
+##  est\_rt: treatment effect vector from collection of randomized trials
+##  est\_os: treatment effect vector from collection of observational studies
+##  sd\_rt: standard error of treatment effects from randomized trials
+##  st\_os: standard error of treatment effects from observational studies
+##  B = number bootstrap resamples
+##  logdata=TRUE (if the est\_rt and est\_os are given on log-scale (as might be true for logistic regression).  If logdata=TRUE, effects are exponentiated before outputing
 
-##  B = number bootstrap resamples
+```
+est_randomeffect
+<- function(est_rt,est_os,sd_rt,sd_os,B=1000,logdata=TRUE,conf=.95){
 
-##  logdata=TRUE (if the est\_rt and est\_os are given on log-scale (as might be true for logistic regression).  If logdata=TRUE, effects are exponentiated before outputing```
-est\_randomeffect &lt;- function(est\_rt,est\_os,sd\_rt,sd\_os,B=1000,logdata=TRUE,conf=.95){
+  
 
-  if(is.na(B)){
+  if(is.na(B)){
 
-    N\_os &lt;- length(est\_os)
+    N_os <- length(est_os)
 
-    N\_rt &lt;- length(est\_rt)
+    N_rt <- length(est_rt)
 
-    out &lt;- fe\_meta(est\_rt,sd\_rt)
+    out <- fe_meta(est_rt,sd_rt)
 
-    theta\_hat &lt;- out[1]
+    theta_hat <- out[1]
 
-    theta\_hat\_os &lt;-  fe\_meta(est\_os,sd\_os)[1]
+    theta_hat_os <-  fe_meta(est_os,sd_os)[1]
 
-    Q &lt;- sum(sd\_os^-2\*(est\_os-theta\_hat\_os)^2)
+    Q <-
+sum(sd_os^-2*(est_os-theta_hat_os)^2)
 
-    sigmab2 &lt;- max(0, (Q-(length(est\_os)-1))/(sum(sd\_os^-2)-sum(sd\_os^-4)/sum(sd\_os^-2)))
+    sigmab2 <- max(0,
+(Q-(length(est_os)-1))/(sum(sd_os^-2)-sum(sd_os^-4)/sum(sd_os^-2)))
 
-    est\_bias &lt;- rep(fe\_meta(est\_os,sqrt(sd\_os^2+sigmab2))[1] - theta\_hat,length(sd\_os))
+    est_bias <-
+rep(fe_meta(est_os,sqrt(sd_os^2+sigmab2))[1] - theta_hat,length(sd_os))
 
-    var\_os &lt;- sd\_os^2 + sigmab2
+    var_os <- sd_os^2 + sigmab2
 
-    var\_rt &lt;- sd\_rt^2
+    var_rt <- sd_rt^2
 
-    Dmat &lt;- 1\*(c(rep(0,length(est\_rt)),est\_bias)%\*%t(c(rep(0,length(est\_rt)),est\_bias))+diag(c(sd\_rt^2,var\_os)))
+    Dmat <-
+1*(c(rep(0,length(est_rt)),est_bias)%*%t(c(rep(0,length(est_rt)),est_bias))+diag(c(sd_rt^2,var_os)))
 
-    bvec &lt;- c(1)
+    bvec <- c(1)
 
-    meq &lt;- 1
+    meq <- 1
 
-    dvec &lt;- c(rep(0,length(est\_rt)),rep(0,length(est\_os)))
+    dvec <-
+c(rep(0,length(est_rt)),rep(0,length(est_os)))
 
-    Amat &lt;- t(matrix(c(rep(1,length(est\_rt)),rep(1,length(est\_os))),nrow=length(bvec)))
+    Amat <-
+t(matrix(c(rep(1,length(est_rt)),rep(1,length(est_os))),nrow=length(bvec)))
 
-    weights &lt;- solve.QP(Dmat=Dmat, dvec=dvec, Amat=Amat, bvec=bvec, meq=0, factorized=FALSE)$solution
+    weights <- solve.QP(Dmat=Dmat,
+dvec=dvec, Amat=Amat, bvec=bvec, meq=0, factorized=FALSE)$solution
 
-    w\_rt &lt;- weights[1:length(est\_rt)]
+    w_rt <- weights[1:length(est_rt)]
 
-    w\_os &lt;- weights[(length(est\_rt)+1):length(weights)]
+    w_os <- weights[(length(est_rt)+1):length(weights)]
 
-    if(logdata) return(exp((sum(w\_rt\*est\_rt)+sum(w\_os\*est\_os))/(sum(w\_os)+sum(w\_rt))))
+    if(logdata)
+return(exp((sum(w_rt*est_rt)+sum(w_os*est_os))/(sum(w_os)+sum(w_rt))))
 
-    return((sum(w\_rt\*est\_rt)+sum(w\_os\*est\_os))/(sum(w\_os)+sum(w\_rt)))
+   
+return((sum(w_rt*est_rt)+sum(w_os*est_os))/(sum(w_os)+sum(w_rt)))
 
-  }
+  }
 
-  N\_rt &lt;- length(est\_rt)
+  
 
-  N\_os &lt;- length(est\_os)
+  N_rt <- length(est_rt)
 
-  data &lt;- c(est\_rt,sd\_rt,est\_os,sd\_os,N\_rt,N\_os)
+  N_os <- length(est_os)
 
-  est &lt;- function(data){
+  data <-
+c(est_rt,sd_rt,est_os,sd_os,N_rt,N_os)
 
-    N\_os &lt;- data[length(data)]
+  est <- function(data){
 
-    N\_rt &lt;- data[length(data)-1]
+    N_os <- data[length(data)]
 
-    est\_rt &lt;- data[1:N\_rt]
+    N_rt <- data[length(data)-1]
 
-    est\_os &lt;- data[(2\*N\_rt+1):(2\*N\_rt+N\_os)]
+    est_rt <- data[1:N_rt]
 
-    sd\_rt &lt;- data[(N\_rt+1):(2\*N\_rt)]
+    est_os <- data[(2*N_rt+1):(2*N_rt+N_os)]
 
-    sd\_os &lt;- data[(2\*N\_rt+N\_os+1):(2\*N\_rt+2\*N\_os)]
+    sd_rt <- data[(N_rt+1):(2*N_rt)]
 
-    out &lt;- fe\_meta(est\_rt,sd\_rt)
+    sd_os <-
+data[(2*N_rt+N_os+1):(2*N_rt+2*N_os)]
 
-    theta\_hat &lt;- out[1]
+    out <- fe_meta(est_rt,sd_rt)
 
-    theta\_hat\_os &lt;-  fe\_meta(est\_os,sd\_os)[1]
+    theta_hat <- out[1]
 
-    Q &lt;- sum(sd\_os^-2\*(est\_os-theta\_hat\_os)^2)
+    theta_hat_os <-  fe_meta(est_os,sd_os)[1]
 
-    sigmab2 &lt;- max(0, (Q-(length(est\_os)-1))/(sum(sd\_os^-2)-sum(sd\_os^-4)/sum(sd\_os^-2)))
+    Q <-
+sum(sd_os^-2*(est_os-theta_hat_os)^2)
 
-    est\_bias &lt;- rep(fe\_meta(est\_os,sqrt(sd\_os^2+sigmab2))[1] - theta\_hat,length(sd\_os))
+    sigmab2 <- max(0,
+(Q-(length(est_os)-1))/(sum(sd_os^-2)-sum(sd_os^-4)/sum(sd_os^-2)))
 
-    var\_os &lt;- sd\_os^2 + sigmab2
+    est_bias <-
+rep(fe_meta(est_os,sqrt(sd_os^2+sigmab2))[1] - theta_hat,length(sd_os))
 
-    var\_rt &lt;- sd\_rt^2
+    var_os <- sd_os^2 + sigmab2
 
-    Dmat &lt;- 1\*(c(rep(0,length(est\_rt)),est\_bias)%\*%t(c(rep(0,length(est\_rt)),est\_bias))+diag(c(sd\_rt^2,var\_os)))
+    var_rt <- sd_rt^2
 
-    bvec &lt;- c(1)
+    Dmat <-
+1*(c(rep(0,length(est_rt)),est_bias)%*%t(c(rep(0,length(est_rt)),est_bias))+diag(c(sd_rt^2,var_os)))
 
-    meq &lt;- 1
+    bvec <- c(1)
 
-    dvec &lt;- c(rep(0,length(est\_rt)),rep(0,length(est\_os)))
+    meq <- 1
 
-    Amat &lt;- t(matrix(c(rep(1,length(est\_rt)),rep(1,length(est\_os))),nrow=length(bvec)))
+    dvec <-
+c(rep(0,length(est_rt)),rep(0,length(est_os)))
 
-    weights &lt;- solve.QP(Dmat=Dmat, dvec=dvec, Amat=Amat, bvec=bvec, meq=0, factorized=FALSE)$solution
+    Amat <-
+t(matrix(c(rep(1,length(est_rt)),rep(1,length(est_os))),nrow=length(bvec)))
 
-    w\_rt &lt;- weights[1:length(est\_rt)]
+    weights <- solve.QP(Dmat=Dmat,
+dvec=dvec, Amat=Amat, bvec=bvec, meq=0, factorized=FALSE)$solution
 
-    w\_os &lt;- weights[(length(est\_rt)+1):length(weights)]
+    w_rt <- weights[1:length(est_rt)]
 
-    return(c((sum(w\_rt\*est\_rt)+sum(w\_os\*est\_os))/(sum(w\_os)+sum(w\_rt)),sigmab2 ))
+    w_os <-
+weights[(length(est_rt)+1):length(weights)]
 
-  }
+   
+return(c((sum(w_rt*est_rt)+sum(w_os*est_os))/(sum(w_os)+sum(w_rt)),sigmab2
+))
 
-  the\_est &lt;- est(data)
+  }
 
-  random\_data &lt;- function(data,mle=the\_est){
+  the_est <- est(data)
 
-    N\_os &lt;- data[length(data)]
+  
 
-    N\_rt &lt;- data[length(data)-1]
+  random_data <- function(data,mle=the_est){
 
-    est\_rt &lt;- data[1:N\_rt]
+    N_os <- data[length(data)]
 
-    est\_os &lt;- data[(2\*N\_rt+1):(2\*N\_rt+N\_os)]
+    N_rt <- data[length(data)-1]
 
-    sd\_rt &lt;- data[(N\_rt+1):(2\*N\_rt)]
+    est_rt <- data[1:N_rt]
 
-    sd\_os &lt;- data[(2\*N\_rt+N\_os+1):(2\*N\_rt+2\*N\_os)]
+    est_os <- data[(2*N_rt+1):(2*N_rt+N_os)]
 
-    theta\_hat &lt;- fe\_meta(est\_rt,sd\_rt)[1]
+    sd_rt <- data[(N_rt+1):(2*N_rt)]
 
-    est\_bias &lt;- est\_os-theta\_hat+rnorm(N\_os,mean=0,sd=sqrt(mle[2]))
+    sd_os <- data[(2*N_rt+N_os+1):(2*N_rt+2*N_os)]
 
-    rt\_b &lt;- rnorm(length(sd\_rt),mean=mle[1],sd=sd\_rt)
+    theta_hat <- fe_meta(est_rt,sd_rt)[1]
 
-    os\_b &lt;- rnorm(length(sd\_os),mean=mle[1]+est\_bias,sd=sd\_os)
+    est_bias <-
+est_os-theta_hat+rnorm(N_os,mean=0,sd=sqrt(mle[2]))
 
-    return(c(rt\_b,sd\_rt,os\_b,sd\_os,N\_rt,N\_os))
+    rt_b <-
+rnorm(length(sd_rt),mean=mle[1],sd=sd_rt)
 
-  }
+    os_b <-
+rnorm(length(sd_os),mean=mle[1]+est_bias,sd=sd_os)
 
-  the.boot &lt;- boot(data, est, R = B, sim = &quot;parametric&quot;,
+    return(c(rt_b,sd_rt,os_b,sd_os,N_rt,N_os))
 
-                   ran.gen = random\_data, mle = the\_est)
+  }
 
-  theints &lt;- boot.ci(the.boot,conf=conf,type=c(&quot;norm&quot;,&quot;basic&quot;, &quot;stud&quot;, &quot;perc&quot;))
+  the.boot <- boot(data, est, R = B, sim =
+"parametric",
 
-  if(logdata) return(c(exp(the\_est[1]),exp(theints$norm[2:3])))
+                   ran.gen = random_data, mle =
+the_est)
 
-  return(c(the\_est[1],theints$norm[2:3]))
+  theints <-
+boot.ci(the.boot,conf=conf,type=c("norm","basic",
+"stud", "perc")) 
 
-}```
+  if(logdata) return(c(exp(the_est[1]),exp(theints$norm[2:3])))
+
+  return(c(the_est[1],theints$norm[2:3]))
+
+}
+
+ ```
+
+
