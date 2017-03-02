@@ -468,7 +468,8 @@ est\_fixedeffect\_nn &lt;- function(est\_rt,est\_os,sd\_rt,sd\_os,B=1000,logdata
 
   return(c(the\_est,theints$norm[2:3]))
 
-}```
+} ```
+
 #  Random-bias meta analysis (from 3.1) using DerSimmion/Laird estimate for between study variance (theta\_vec,se\_vec are vectors).  The estimate for the randomized trials is calculated using a fixed effects meta analysis.  This function does not allow negative weights for the trials
 
 ##  est\_rt: treatment effect vector from collection of randomized trials
