@@ -217,8 +217,7 @@ random_data <- function(data,mle=the_est){
 
 
 ```
-est_fixedeffect_nn
-<- function(est_rt,est_os,sd_rt,sd_os,B=1000,logdata=TRUE,conf=.95){
+est_fixedeffect_nn <- function(est_rt,est_os,sd_rt,sd_os,B=1000,logdata=TRUE,conf=.95){
   if(is.na(B)){
     theta_hat <- fe_meta(est_rt,sd_rt)[1]
     est_bias <- est_os-theta_hat
