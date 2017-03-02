@@ -15,8 +15,7 @@ Parameters:
 * B = number bootstrap resamples
 * conf=confidence level
  
-```
-get_est <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
+``` get_est <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
   var_os <- sd_os^2
   var_rt <- sd_rt^2
   bias <- est_os-est_rt
@@ -49,9 +48,9 @@ get_est <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
  return(c(the_est[1],theints$norm[2:3]))
 }
 ```
- 
 
 ## est\_cons 
+
 Function to calculate basic estimate given in Section 2.2  of manuscript tapering the weight for the trial toward 1.
 
 Parameters:
@@ -62,8 +61,7 @@ Parameters:
 * B = number bootstrap resamples
 * conf = confidence level
 
-```
-est_cons <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
+``` est_cons <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
   if(is.na(B)){
     var_os <- sd_os^2
     var_rt <- sd_rt^2
