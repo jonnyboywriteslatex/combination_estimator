@@ -139,7 +139,6 @@ Parameters:
 * B = number bootstrap resamples
 * logdata=TRUE (if the est_rt and est_os are given on log-scale (as might be true for logistic  regression).  If logdata=TRUE, effects are exponentiated before outputing)
 
-
 ```
 est_fixedeffect <- function(est_rt,est_os,sd_rt,sd_os,B=1000,logdata=TRUE,conf=.95){
   if(is.na(B)){
