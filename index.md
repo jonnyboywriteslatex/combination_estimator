@@ -50,7 +50,7 @@ get_est <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
 }
 ```
 ##  est\_cons 
-Function to calculate basic estimate given in Section 2.2  of manuscript tapering the weight for the trial toward 1.
+Function to calculate basic estimate given in Section 2.5  of manuscript tapering the weight for the trial toward 1.
 
 Parameters:
 * est\_rt: treatment effect estimate from randomized trial
@@ -279,7 +279,7 @@ return((sum(w_rt*est_rt)+sum(w_os*est_os))/(sum(w_os)+sum(w_rt)))
 ```
 
 ##  est_randomeffect
-Random-bias meta analysis (from 3.1) using DerSimmion/Laird estimate for between study variance (theta\_vec,se\_vec are vectors).  The estimate for the randomized trials is calculated using a fixed effects meta analysis.  
+Random-bias meta analysis (from Section 3.2 of manuscript) using DerSimmion/Laird estimate for between study variance (theta\_vec,se\_vec are vectors).  The estimate for the randomized trials is calculated using a fixed effects meta analysis.  
 
 Parameters
 * est\_rt: treatment effect vector from collection of randomized trials
