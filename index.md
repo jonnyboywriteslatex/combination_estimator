@@ -132,11 +132,11 @@ Fixed-bias meta analysis (from 3.1).  The estimate for the randomized trials is
 This function allows negative weights for the observational studies
 
 Parameters
-*  est_rt: treatment effect vector from collection of randomized trials
-*  est_os: treatment effect vector from collection of observational studies
-*  sd_rt: standard error of treatment effects from randomized trials
-*  st_os: standard error of treatment effects from observational studies
-*  B = number bootstrap resamples
+*  est_rt: treatment effect vector from collection of randomized trials 
+*  est_os: treatment effect vector from collection of observational studies 
+*  sd_rt: standard error of treatment effects from randomized trials 
+*  st_os: standard error of treatment effects from observational studies 
+*  B = number bootstrap resamples 
 *  logdata=TRUE (if the est_rt and est_os are given on log-scale (as might be true for logistic regression).  If logdata=TRUE, effects are exponentiated before outputing
 
  
