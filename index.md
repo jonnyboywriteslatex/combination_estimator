@@ -96,9 +96,6 @@ mean(the_est))
 boot.ci(the.boot,conf=conf,type=c("norm","basic",
 "stud", "perc"))
 
-  # assuming 0 is true parameters do intervals
-cover 0?
-
   return(c(the_est[1],theints$norm[2:3]))
 
   
