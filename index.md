@@ -103,8 +103,7 @@ est_par <- mle[1]
 #  fixed effects meta analysis (theta\_vec,se\_vec are vectors)
  
 ```
-fe_meta
-<- function(theta_vec,se_vec){
+fe_meta <- function(theta_vec,se_vec){
  weights <- 1/se_vec^2/(sum(1/se_vec^2))
  return(c(sum(weights*theta_vec),sum(weights^2*se_vec^2)))
 }
