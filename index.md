@@ -131,13 +131,13 @@ return(c(sum(weights*theta_vec),sum(weights^2*(se_vec^2+sigmab2))))
 Fixed-bias meta analysis (from 3.1).  The estimate for the randomized trials is calculated using a fixed effects meta analysis. 
 This function allows negative weights for the observational studies
 
-Parameters
-*  est_rt: treatment effect vector from collection of randomized trials
-*  est_os: treatment effect vector from collection of observational studies 
-*  sd_rt: standard error of treatment effects from randomized trials 
-*  st_os: standard error of treatment effects from observational studies
-*  B = number bootstrap resamples 
-*  logdata=TRUE (if the est_rt and est_os are given on log-scale (as might be true for logistic  regression).  If logdata=TRUE, effects are exponentiated before outputing 
+Parameters:
+* est\_rt: treatment effect vector from collection of randomized trials 
+* est\_os: treatment effect vector from collection of observational studies 
+* sd\_rt: standard error of treatment effect estimates from randomized trial
+* st\_os: standard error of treatment effect estimates from observational study
+* B = number bootstrap resamples
+* logdata=TRUE (if the est_rt and est_os are given on log-scale (as might be true for logistic  regression).  If logdata=TRUE, effects are exponentiated before outputing) 
  
 ```
 est_fixedeffect <- function(est_rt,est_os,sd_rt,sd_os,B=1000,logdata=TRUE,conf=.95){
@@ -207,14 +207,13 @@ random_data <- function(data,mle=the_est){
 Fixed-bias meta analysis (from 3.1).  The estimate for the randomized trials is calculated using a fixed effects meta analysis.  This function does not allow negative weights for the observational studies
 
 
-Parameters
-*  est\_rt: treatment effect vector from collection of randomized trials
-*  est\_os: treatment effect vector from collection of observational studies
-*  sd\_rt: standard error of treatment effects from randomized trials
-*  st\_os: standard error of treatment effects from observational studies
-*  B = number bootstrap resamples
-*  logdata=TRUE (if the est\_rt and est\_os are given on log-scale (as might be true for logistic regression).  If logdata=TRUE, effects are exponentiated before outputing
-
+Parameters:
+* est\_rt: treatment effect vector from collection of randomized trials 
+* est\_os: treatment effect vector from collection of observational studies 
+* sd\_rt: standard error of treatment effect estimates from randomized trial
+* st\_os: standard error of treatment effect estimates from observational study
+* B = number bootstrap resamples
+* logdata=TRUE (if the est_rt and est_os are given on log-scale (as might be true for logistic  regression).  If logdata=TRUE, effects are exponentiated before outputing) 
 
 ```
 est_fixedeffect_nn <- function(est_rt,est_os,sd_rt,sd_os,B=1000,logdata=TRUE,conf=.95){
@@ -283,13 +282,12 @@ return((sum(w_rt*est_rt)+sum(w_os*est_os))/(sum(w_os)+sum(w_rt)))
 Random-bias meta analysis (from 3.1) using DerSimmion/Laird estimate for between study variance (theta\_vec,se\_vec are vectors).  The estimate for the randomized trials is calculated using a fixed effects meta analysis.  This function does not allow negative weights for the trials
 
 Parameters
-*  est\_rt: treatment effect vector from collection of randomized trials
-*  est\_os: treatment effect vector from collection of observational studies
-*  sd\_rt: standard error of treatment effects from randomized trials
-* st\_os: standard error of treatment effects from observational studies
-*  B = number bootstrap resamples
-*  logdata=TRUE (if the est\_rt and est\_os are given on log-scale (as might be true for logistic regression).  If logdata=TRUE, effects are exponentiated before outputing
-
+* est\_rt: treatment effect vector from collection of randomized trials
+* est\_os: treatment effect vector from collection of observational studies
+* sd\_rt: standard error of treatment effect estimates from randomized trial
+* st\_os: standard error of treatment effect estimates from observational study
+* B = number bootstrap resamples
+* logdata=TRUE (if the est_rt and est_os are given on log-scale (as might be true for logistic  regression).  If logdata=TRUE, effects are exponentiated before outputing) 
 ```
 est_randomeffect <- function(est_rt,est_os,sd_rt,sd_os,B=1000,logdata=TRUE,conf=.95){
   if(is.na(B)){
