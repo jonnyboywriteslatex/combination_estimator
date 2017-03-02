@@ -423,8 +423,7 @@ return(c(exp(the_est),exp(theints$norm[2:3])))
   return(c(the_est,theints$norm[2:3]))
 
 }
-
- ```
+```
 
 #  Fixed-bias meta analysis (from 3.1).  The estimate for the randomized trials is calculated using a fixed effects meta analysis.  This function does not allow negative weights for the observational studies
 ##  est\_rt: treatment effect vector from collection of randomized trials
