@@ -405,19 +405,19 @@ osmat[19,] <- getse(0.12,0.52)
  
 # Section 3.1 approach
 # not restricting weights
-est_fixedeffect(rtmat[,1],osmat[,1],rtmat[,2],osmat[,2],B=1000)
+est_fixedeffect(rtmat[,1],osmat[,1],rtmat[,2],osmat[,2],B=10000)
 # restricting weights to be negative
-est_fixedeffect_nn(rtmat[,1],osmat[,1],rtmat[,2],osmat[,2],B=1000)
+est_fixedeffect_nn(rtmat[,1],osmat[,1],rtmat[,2],osmat[,2],B=10000)
 
 # random effects meta analysis
-est_randomeffect(rtmat[,1],osmat[,1],rtmat[,2],osmat[,2],B=1000)
+est_randomeffect(rtmat[,1],osmat[,1],rtmat[,2],osmat[,2],B=10000)
 
-# Separate meta analyses and then combining using methods from Section 2.1
+# Separate meta analyses and then combining using methods from Section 2.1 (since estimated sigma_b > 0 use random effects meta analysis for observational studies.
 stuff1 <- fe_meta(rtmat[,1],rtmat[,2])
-stuff2 <- fe_meta(osmat[,1],osmat[,2])
+stuff2 <- re_meta(osmat[,1],osmat[,2])
 
-stuff <- get_est(est_rt=stuff1[1],est_os=stuff2[1],sd_rt=sqrt(stuff1[2]),sd_os=sqrt(stuff2[2]),B=1000)
+get_est(est_rt=stuff1[1],est_os=stuff2[1],sd_rt=sqrt(stuff1[2]),sd_os=sqrt(stuff2[2]),B=10000)
 
-
+# note that the estimate is equal to that produced using est_randomeffect
 
 
