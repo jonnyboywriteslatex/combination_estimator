@@ -14,9 +14,9 @@ Parameters:
 * st\_os: standard error of treatment effect estimate from observational study
 * B = number bootstrap resamples
 * conf=confidence level
- 
+* logdata=TRUE (if the est_rt and est_os are given on log-scale (as might be true for logistic  regression)).  If logdata=TRUE, effects are exponentiated before outputing) 
 ``` 
-get_est <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
+get_est <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95,logdata=TRUE){
   var_os <- sd_os^2
   var_rt <- sd_rt^2
   bias <- est_os-est_rt
@@ -46,6 +46,7 @@ get_est <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
   }
   the.boot <- boot(data, est, R = B, sim ="parametric", ran.gen = random_data, mle = mean(the_est))
   theints <- boot.ci(the.boot,conf=conf,type=c("norm","basic", "stud", "perc"))
+  if(logdata) return(c(exp(the_est),exp(theints$norm[2:3])))
  return(c(the_est[1],theints$norm[2:3]))
 }
 ```
@@ -58,10 +59,9 @@ Parameters:
 * sd\_rt: standard error of treatment effect estimate from randomized trial
 * st\_os: standard error of treatment effect estimate from observational study
 * B = number bootstrap resamples
-* conf=confidence level
-
+* conf=confidence level* logdata=TRUE (if the est_rt and est_os are given on log-scale (as might be true for logistic  regression)).  If logdata=TRUE, effects are exponentiated before outputing) 
 ``` 
-est_cons <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95){
+est_cons <- function(est_rt,est_os,sd_rt,sd_os,B=NA,conf=.95,logdata=TRUE){
   if(is.na(B)){
     var_os <- sd_os^2
     var_rt <- sd_rt^2
@@ -95,6 +95,7 @@ est_par <- mle[1]
 "parametric",
                    ran.gen = random_data, mle =mean(the_est))
   theints <- boot.ci(the.boot,conf=conf,type=c("norm","basic","stud", "perc"))
+  if(logdata) return(c(exp(the_est),exp(theints$norm[2:3])))
   return(c(the_est[1],theints$norm[2:3]))
 }
 ```
@@ -361,5 +362,62 @@ the_est <- est(data)
   return(c(the_est[1],theints$norm[2:3]))
 }
 ```
+##  Examples
+
+```
+
+###  some examples - from section 4.2
+
+# function to get log-scale standard errors and estimates from OR confidence limits
+getse <- function(l1,l2){
+ log1 <- log(l1)
+  log2 <- log(l2)
+  a <- ((log1+log2)/2)
+  sel <- (log2-log1)/(2*1.96)
+  return(c(a,sel))
+}
+## estimates from randomized trial
+rtmat <- matrix(0,ncol=2,nrow=2)
+rtmat[1,] <- getse(0.25,1) 
+rtmat[2,] <- getse(0.42,0.97) 
+
+## estimates from observational study
+osmat <- matrix(0,ncol=2,nrow=19)
+osmat[1,] <- getse(0.3,0.64) 
+osmat[2,] <- getse(0.35,0.86) 
+osmat[3,] <- getse(0.54,0.78) 
+osmat[4,] <- getse(0.18,1.01) 
+osmat[5,] <- getse(0.55,0.85) 
+osmat[6,] <- getse(0.49,1.09) 
+osmat[7,] <- getse(0.42,0.79) 
+osmat[8,] <- getse(0.40,1.15) 
+osmat[9,] <- getse(0.3,0.87) 
+osmat[10,] <- getse(0.4,0.71) 
+osmat[11,] <- getse(0.25,1.91) 
+osmat[12,] <- getse(0.61,0.95) 
+osmat[13,] <- getse(0.51,1.23) 
+osmat[14,] <- getse(0.34,1.14) 
+osmat[15,] <- getse(0.20,.45) 
+osmat[16,] <- getse(0.19,1.05) 
+osmat[17,] <- getse(0.15,.59) 
+osmat[18,] <- getse(0.19,0.79) 
+osmat[19,] <- getse(0.12,0.52) 
+ 
+# Section 3.1 approach
+# not restricting weights
+est_fixedeffect(rtmat[,1],osmat[,1],rtmat[,2],osmat[,2],B=1000)
+# restricting weights to be negative
+est_fixedeffect_nn(rtmat[,1],osmat[,1],rtmat[,2],osmat[,2],B=1000)
+
+# random effects meta analysis
+est_randomeffect(rtmat[,1],osmat[,1],rtmat[,2],osmat[,2],B=1000)
+
+# Separate meta analyses and then combining using methods from Section 2.1
+stuff1 <- fe_meta(rtmat[,1],rtmat[,2])
+stuff2 <- fe_meta(osmat[,1],osmat[,2])
+
+stuff <- get_est(est_rt=stuff1[1],est_os=stuff2[1],sd_rt=sqrt(stuff1[2]),sd_os=sqrt(stuff2[2]),B=1000)
+
+
 
 
