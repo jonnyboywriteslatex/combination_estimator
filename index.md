@@ -419,5 +419,4 @@ stuff2 <- re_meta(osmat[,1],osmat[,2])
 get_est(est_rt=stuff1[1],est_os=stuff2[1],sd_rt=sqrt(stuff1[2]),sd_os=sqrt(stuff2[2]),B=10000)
 
 # note that the estimate is equal to that produced using est_randomeffect
-
-
+```
